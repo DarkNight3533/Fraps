@@ -67,6 +67,7 @@ class PlayState extends MusicBeatState {
 
     var separatedVocals:Bool = true;
     public var downscroll:Bool = true;
+    
 
     public function new() {
         super();
