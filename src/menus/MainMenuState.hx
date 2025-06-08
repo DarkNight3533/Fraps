@@ -63,6 +63,9 @@ class MainMenuState extends MusicBeatState {
     function moveSelection(direction:Direction) {
         GLGU.playSound("scrollMenu");
         if (direction != NONE) direction == UP ? curSelected-- : curSelected++;
+        // for avoiding selection out of the array
+        if(curSelected > menuOptions.length-1) curSelected = 0;
+        if(curSelected < 0) curSelected = menuOptions.length-1;
         for (i in 0...menuOptions.length) {
             /**
              * TODO: Make this work slightly differently, since the idle animation restarts every time this function is called
@@ -71,7 +74,7 @@ class MainMenuState extends MusicBeatState {
                 menuOptions[curSelected].playAnimation("selected");
             else
                 menuOptions[i].playAnimation("idle");
-            menuOptions[i].x = (Window.getInstance().width - menuOptions[i].getBounds().width) / 2;
+            menuOptions[i].x = (width - menuOptions[i].getBounds().width) / 2;
         }
     }
 }

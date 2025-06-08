@@ -65,6 +65,7 @@ class PlayState extends MusicBeatState {
 
     var debugText:Text;
 
+    var separatedVocals:Bool = true;
     public var downscroll:Bool = true;
 
     public function new() {
@@ -73,6 +74,13 @@ class PlayState extends MusicBeatState {
 
         loadSong();
 
+        // Set cameras origin to center and reajust position
+        camGame.setAnchor(0.5, 0.5);
+        camHUD.setAnchor(0.5, 0.5);
+        camGame.setPosition(width/2, height/2);
+        camHUD.setPosition(width/2, height/2);
+
+
         camera.layerVisible = (layer) -> layer == Layers.layerNul;
 
         camHUD.layerVisible = (layer) -> layer == Layers.layerUI;
@@ -80,15 +88,10 @@ class PlayState extends MusicBeatState {
         addCamera(camGame);
         addCamera(camHUD);
 
-        camGame.setAnchor(0.5, 0.5);
         camGame.setScale(0.8, 0.8);
 
         debugText = new Text(DefaultFont.get());
         debugText.setScale(5);
-
-        chart = Paths.parseChart(curSong);
-        chartMetadata = Paths.parseMetadata(curSong);
-        trace(chartMetadata);
 
         wall = new Stage(0, 0, Paths.image("week1/wall"));
         // addObj(wall);
@@ -109,7 +112,7 @@ class PlayState extends MusicBeatState {
         curtains.setScrollFactor(2, 2);
         // addObj(curtains);
 
-        if (downscroll) strumY = Window.getInstance().height - 150;
+        if (downscroll) strumY = height - 150;
 
         for (i in 0...4) {
             var opponentStrum = new Strumnote(0, strumY, noteDirs[i]);
@@ -120,20 +123,20 @@ class PlayState extends MusicBeatState {
 
             var noteSpawner:NoteSpawner = new NoteSpawner(opponentStrum);
             noteSpawner.ID = i;
-            noteSpawner.scrollSpeed = 2.3;
+            noteSpawner.scrollSpeed = 1.8;
             noteSpawnerGroup.push(noteSpawner);
         }
 
         for (i in 0...4) {
             var playerStrum = new Strumnote(0, strumY, noteDirs[i]);
             playerStrum.x += 160 * 0.7 * i;
-            playerStrum.x += 50 + Window.getInstance().width / 2;
+            playerStrum.x += 50 + width / 2;
             playerStrumGroup.push(playerStrum);
             addObj(playerStrumGroup[i], Layers.layerUI);
 
             var noteSpawner:NoteSpawner = new NoteSpawner(playerStrum);
             noteSpawner.ID = i + 4;
-            noteSpawner.scrollSpeed = 3;
+            noteSpawner.scrollSpeed = 1.8;
             noteSpawnerGroup.push(noteSpawner);
         }
     
@@ -231,7 +234,8 @@ class PlayState extends MusicBeatState {
                         noteHit(playerStrumGroup, GLGU.capitalize(key), false);
                     }
                 }
-                charPlayAnim(player, key.toLowerCase());
+                // PLAYER DONT NEED TO SING WHEN THERE IS NO NOTE
+                //charPlayAnim(player, key.toLowerCase());
             }
         }
 
@@ -296,6 +300,9 @@ class PlayState extends MusicBeatState {
             player.dance();
             opponent.dance();
         }
+        if(curStep % 16 == 0){
+            girlfriend.dance();
+        }
     }
 
     override function beatHit() {
@@ -340,17 +347,26 @@ class PlayState extends MusicBeatState {
     }
 
     function loadSong() {
+        chart = Paths.parseChart(curSong);
+        chartMetadata = Paths.parseMetadata(curSong);
+        trace(chartMetadata);
+
         inst = Paths.song(curSong + "/inst".toLowerCase());
         inst.position = -5000;
         inst.pause = false;
 
-        vocals = Paths.song(curSong + "/voices-opp".toLowerCase());
-        vocals.position = inst.position;
-        vocals.pause = false;
+        if(separatedVocals){
+            vocals = Paths.song(curSong + "/voices-opp".toLowerCase());
+            vocals.position = inst.position;
+            vocals.pause = false;
+    
+            vocals2 = Paths.song(curSong + "/voices-boy".toLowerCase());
+            vocals2.position = inst.position;
+            vocals2.pause = false;
+        }
+        else {
 
-        vocals2 = Paths.song(curSong + "/voices-boy".toLowerCase());
-        vocals2.position = inst.position;
-        vocals2.pause = false;
+        }
 
         attachedSong = inst;
     }
@@ -387,17 +403,21 @@ class PlayState extends MusicBeatState {
         if (controls.keyPressed("back")) {
             inst.pause = !inst.pause;
             vocals.pause = !vocals.pause;
-            vocals2.pause = !vocals2.pause;
+            if(separatedVocals) vocals2.pause = !vocals2.pause;
             Conductor.songPosition = inst.position * 1000;
         }
     }
 
     function moveNotes(?dt:Float) {
         for (note in noteGroup) {
+            
             var notePos:Float = (note.time - Conductor.songPosition) * 0.45 * note.scrollSpeed;
             note.y = note.parentSpawner.attachedStrum.y;
+            note.downscroll = downscroll;
             note.y += (!note.downscroll) ? notePos : -notePos;
             note.x = note.parentSpawner.attachedStrum.x;
+            
+            //note.update(dt);
 
             if (Conductor.songPosition >= note.time && note.ID < 4) {
                 noteHit(opponentStrumGroup, GLGU.capitalize(note.getPureDirection()), true);

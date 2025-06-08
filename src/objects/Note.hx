@@ -54,6 +54,7 @@ class Note extends SpriteBatch {
         this.noteDirection = noteDirection;
         this.length = length;
         this.y = time;
+        downscroll = PlayState.ME.downscroll;
         loadNote(noteDirection);
         super(note.tile);
     }
@@ -74,6 +75,14 @@ class Note extends SpriteBatch {
         }
         batchNote = alloc(note.tile);
         add(batchNote);
+    }
+
+    public function update(dt:Float) {
+        /* IT WAS JUST FOR A TEST
+        var notePos = (time - Conductor.songPosition * 0.45 * scrollSpeed);
+        y = Math.cos(-parentSpawner.attachedStrum.rotation)*((downscroll) ? -notePos : notePos) + parentSpawner.attachedStrum.y;
+        x = Math.sin(-parentSpawner.attachedStrum.rotation)*((downscroll) ? -notePos : notePos) + parentSpawner.attachedStrum.x;
+        */
     }
 
     /**
