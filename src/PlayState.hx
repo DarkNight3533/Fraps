@@ -73,7 +73,6 @@ class PlayState extends MusicBeatState {
         ME = this;
 
         loadSong();
-
         // Set cameras origin to center and reajust position
         camGame.setAnchor(0.5, 0.5);
         camHUD.setAnchor(0.5, 0.5);
